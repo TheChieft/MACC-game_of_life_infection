@@ -1,0 +1,5 @@
+05/10/2020
+*visual studio code presenta problemas de deteccion de funciones de la libreria pygames
+->
+*se presentaron problemas en la istalacion de pygames; el copilador no encuentra la funcion QUIT
+->
