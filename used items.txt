@@ -1,0 +1,15 @@
+This section presents a summary of the elements used and studied to carry out the work.
+_Inside the code were used:_
+-
+-
+-
+_The study and understanding of the following topics was also needed:_
+-
+-
+-
+finally we use a base code to understand the basic logic of the code to program "the game of life" that is present in the repository with the name of study_code.
+
+The students who did this work and main contributors are:
+Ana Karina Pulido
+Carolina
+Andres Felipe Yañez
