@@ -1,3 +1,3 @@
 num celulas vivas: 0
 num celulas infectadas: 1
-tiempo transcurrido: 1604277857.4297268
+tiempo transcurrido: 1604279016.1654832

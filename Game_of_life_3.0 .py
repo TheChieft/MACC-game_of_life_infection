@@ -48,9 +48,20 @@ def Rules():
                     pygame.quit()
                     sys.exit()
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                if event.key == K_q:
+                    Menu()
+        
+        #Mover el fondo de la imagen derecha a izquierda
+        if left==True:
+            if posx<1:
+                posx+=velocidad
+            else:
+                left=False
+        else:
+            if posx>-600:
+                posx-=velocidad
+            else:
+                left=True
                 
         
         pygame.display.update()
@@ -58,7 +69,7 @@ def Rules():
 
 
 def Play():
-   os.system("python game.py")
+   os.system("python game_of_life_virus.py")
     #Dentro de os.system escriba la direccion del archivo game_of_life_virus.py 
 
 def Menu():
