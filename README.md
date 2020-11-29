@@ -20,7 +20,8 @@ we do it because we are aware that the "Game_datas" code requires a lot of memor
  so there is a considerable drop in performance, therefore, to enjoy both experiences, the code was separated into two. 
 I hope you can understand that it is for the satisfaction of users with high and low resources.
 
----------------------------------------------------------------------------------------------------------------------------------------x
+----------------------<
+
 ESPAÑOL
 
 Hola lector. 
