@@ -1,3 +1,5 @@
+#FINAL_CODE
+
 from game import GAME
 
 game=GAME()
