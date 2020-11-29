@@ -1,0 +1,4 @@
+Despues de21.398083209991455 segundos transcurridosBlancos     8
+Rojos       3
+Total      11
+dtype: int64

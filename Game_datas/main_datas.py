@@ -1,7 +1,4 @@
-from game_prueba import GAME
+from integrado import *
 
-game=GAME()
-
-while game.running:
-    game.menu_inicial.display_menu()
-    game.run()
+game=Run_datas()
+game.run()

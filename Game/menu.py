@@ -70,8 +70,6 @@ class Menu_screen(Menu):
                 self.game.playing = True
             elif self.state == 'Reglas':
                 self.game.menu_inicial = self.game.reglas
-            elif self.state == 'Datos':
-                self.game.menu_inicial = self.game.datos
             elif self.state == 'Exit':
                 self.salir()
             self.run_menu= False
@@ -80,7 +78,9 @@ class Menu_screen(Menu):
         self.game.running = False
 
 class Reglas(Menu):
-    pass
+    archivo=open("REGLAS.txt","r")
+    print(archivo.read())
+    
 
 class Datos(Menu):
     pass

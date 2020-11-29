@@ -3,6 +3,7 @@ import random
 import time
 import numpy as np
 from menu import *
+import sys
 
 
 class GAME():
@@ -113,13 +114,14 @@ class GAME():
     def events(self): #obtener los eventos del mause en pantalla y de teclas
         for event in pygame.event.get():
                 if event.type == pygame.QUIT: #si se selecciona la x en el la venta de windows se cierra el programa
+                    self.run_menu= False
                     self.running = False
                     self.menu_inicial.run_display = False
+                    pygame.quit()
+                    sys.exit()
                 if event.type == pygame.KEYDOWN: #si se presiona alguna tecla se pausa el juego
                     if event.key == pygame.K_RETURN:
                         self.START_KEY = True
-                    if event.key == pygame.K_BACKSPACE:
-                        self.BACK_KEY = True
                     if event.key == pygame.K_DOWN:
                         self.DOWN_KEY = True
                     if event.key == pygame.K_UP:

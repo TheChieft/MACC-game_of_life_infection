@@ -2,7 +2,10 @@ import pygame
 import random
 import time
 import numpy as np
-from menu_prueba import *
+import modulo_1 as md
+from menu_datas import Menu_screen
+from menu_datas import Reglas
+from menu_datas import Datos 
 
 
 class GAME():
@@ -42,12 +45,12 @@ class GAME():
 
         ##MENU *IMPORTANTE*
         self.UP_KEY, self.DOWN_KEY, self.START_KEY = False, False, False #teclas de seleccion menu
-        self.menu=Menu_screen(self) #HERENCIA DE Menu() DONDE ESTA LA VISTA DEL MENU
+        self.menu= Menu_screen(self) #HERENCIA DE Menu() DONDE ESTA LA VISTA DEL MENU
         self.reglas=Reglas(self) #HERENCIA DEL Menu() DONDE ESTARAN LAS REGLAS DEL JUEGO
         self.datos=Datos(self) #HERENCIA DEL Menu() DONDE ESTARAN LOS DATOS FINALES
         self.menu_inicial=self.menu #COPIA DE LA HERENCIA
         self.display = pygame.Surface((self.screen_w,self.screen_h)) #CREAR UNA ZONA PARA MOSTRAR IMAGENES / TEXTOS
-        self.BG_menu=pygame.image.load("BG_.png")
+        self.BG_menu=pygame.image.load("fondo.png")
 
     #MENU
     def draw_text(self, text, size, x, y ): #DIBUJAR LETRAS EN PANTALLA
@@ -120,8 +123,6 @@ class GAME():
                 if event.type == pygame.KEYDOWN: #si se presiona alguna tecla se pausa el juego
                     if event.key == pygame.K_RETURN:
                         self.START_KEY = True
-                    if event.key == pygame.K_BACKSPACE:
-                        self.BACK_KEY = True
                     if event.key == pygame.K_DOWN:
                         self.DOWN_KEY = True
                     if event.key == pygame.K_UP:
@@ -152,6 +153,13 @@ class GAME():
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
 
     def run(self): #CORRE EL JUEGO
+        self.pauseRun = False #DETERMINAR SI EL JUEGO SE HA PAUSADO
+        self.running = True #TENERMINAR SI EL juego esta corriendo
+        self.segundos = []
+        self.inf = []
+        self.pob = []
+        self.total = []
+        self.start = time.time()
         while self.running: #LOOP DE VENTANA
             self.newStatus = np.copy(self.status) #COPIAR EL ULTIMO ESTADO DE LA CELDA
 
@@ -171,8 +179,28 @@ class GAME():
             self.Texto_en_juego(10,10,self.poblacion)
             self.Texto_en_juego(150,10,self.infectados,False)
             self.Texto_en_juego(10,775,'',None)
+            
+            self.end = time.time()
+            self.elapsed = self.end - self.start
+            self.total.append((self.poblacion+self.infectados))
+            self.segundos.append(self.elapsed)
+            self.pob.append(self.poblacion)
+            self.inf.append(self.infectados)
 
             pygame.display.flip() #actualizar pantalla
             self.reset_keys()
+            
+            self.x = md.lista(self.poblacion, self.infectados, (self.poblacion + self.infectados))
+            if self.x[0] and self.x[1] and self.x[2] != 0:
+                self.a = md.porcentajes(self.x)
+                self.x = md.lista(self.poblacion, self.infectados, (self.poblacion + self.infectados))
+                md.pie_graph(self.a, str(self.elapsed))
+                self.df = md.dataframe(self.x, ['Blancos', 'Rojos', 'Total']) 
+                self.file = open("real.txt", "w")
+                self.file.write("Despues de"+str(self.elapsed)+" segundos transcurridos"+str(self.df))
+                
+            if self.infectados != 0 and self.poblacion != 0:
+                md.compare(self.total, self.infectados, self.poblacion, self.elapsed)
+                md.data(self.inf, self.pob, "Poblacion infectada")
 
 
