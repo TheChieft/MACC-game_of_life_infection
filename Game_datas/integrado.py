@@ -42,7 +42,7 @@ class Opcion:
 class Cursor:
 
     def __init__(self, x, y, dy):
-        self.image = pygame.image.load('cursor.png').convert_alpha()
+        self.image = pygame.image.load('Game_datas\cursor.png').convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.y_inicial = y
@@ -65,7 +65,7 @@ class Menu:
  
     def __init__(self, opciones):
         self.opciones = []
-        fuente = pygame.font.Font('fuentes/Fuente.ttf', 20)
+        fuente = pygame.font.Font('Game_datas/fuentes/Fuente.ttf', 20)
         x = 105
         y = 105
         paridad = 1
@@ -150,7 +150,7 @@ class Run_datas():
 
         pygame.font.init()
         screen = pygame.display.set_mode([800, 800])
-        fondo = pygame.image.load("fondo.png").convert()
+        fondo = pygame.image.load("Game_datas\Fondo.png").convert()
         menu = Menu(opciones)
 
         while not salir:

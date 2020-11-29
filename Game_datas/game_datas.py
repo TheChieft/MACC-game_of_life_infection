@@ -52,7 +52,7 @@ class GAME():
         self.datos=Datos(self) #HERENCIA DEL Menu() DONDE ESTARAN LOS DATOS FINALES
         self.menu_inicial=self.menu #COPIA DE LA HERENCIA
         self.display = pygame.Surface((self.screen_w,self.screen_h)) #CREAR UNA ZONA PARA MOSTRAR IMAGENES / TEXTOS
-        self.BG_menu=pygame.image.load("fondo.png")
+        self.BG_menu=pygame.image.load("Game_datas\Fondo.png")
 
     #MENU
     def draw_text(self, text, size, x, y ): #DIBUJAR LETRAS EN PANTALLA

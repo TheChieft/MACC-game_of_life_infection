@@ -1,5 +1,5 @@
 #FINAL_CODE
-
+import os
 import pygame
 
 class Menu():
@@ -80,7 +80,8 @@ class Menu_screen(Menu):
         self.game.running = False
 
 class Reglas(Menu):
-    archivo=open("REGLAS.txt","r")
+   # os.system('REGLAS.txt')
+    archivo=open("Game\REGLAS.txt",encoding="utf8")
     print(archivo.read())
     
 
