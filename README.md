@@ -1,4 +1,4 @@
-# MACC-game_of_life_Pandemic_simulator
+# MACC-game_of_life_infection
 From the game of life (cellular automata) created by john Horton Conway, create design new present rules implementing the possibility of contagion of different diseases creating another possible way of death
 
 Problem: Lack of awareness about the impact that a virus can have on a society and the little importance that is given to individual actions.
