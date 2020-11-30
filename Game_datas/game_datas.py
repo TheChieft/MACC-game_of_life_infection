@@ -1,6 +1,6 @@
 #FINAL_CODE
 
-import pygame
+import pygame , sys 
 import random
 import time
 import numpy as np

@@ -80,10 +80,6 @@ class Menu_screen(Menu):
         self.game.running = False
 
 class Reglas(Menu):
-   # os.system('REGLAS.txt')
     archivo=open("Game\REGLAS.txt",encoding="utf8")
     print(archivo.read())
     
-
-class Datos(Menu):
-    pass

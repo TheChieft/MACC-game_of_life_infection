@@ -134,8 +134,6 @@ def mostrar_opciones():
 def salir_del_programa():
     pygame.quit()
 
-def menu_principal():
-    game.menu_inicial.display_menu()
     
 class Run_datas():
     def run(self):

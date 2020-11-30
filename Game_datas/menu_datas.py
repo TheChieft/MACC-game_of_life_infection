@@ -1,6 +1,6 @@
 #FINAL_CODE
 
-import pygame
+import pygame, sys
 
 class Menu():
     def __init__(self,game):
@@ -83,14 +83,18 @@ class Menu_screen(Menu):
             elif self.state == 'Datos':
                 self.game.menu_inicial = self.game.datos
             elif self.state == 'Exit':
-                self.salir()
+                self.run_menu= False
+                self.running = False
+                pygame.quit()
+                sys.exit()
             self.run_menu= False
 
     def salir(self):
         self.game.running = False
 
 class Reglas(Menu):
-    pass
+    archivo=open("Game_datas\REGLAS.txt",encoding="utf8")
+    print(archivo.read())
 
 class Datos(Menu):
     pass
