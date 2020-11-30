@@ -24,8 +24,7 @@ class Menu_screen(Menu):
         self.state = "Start"
         self.titlex, self.titley = self.mid_w, self.mid_h +30
         self.reglasx, self.reglasy = self.mid_w, self.mid_h + 60
-        self.datosx, self.datosy = self.mid_w, self.mid_h + 90
-        self.exitx, self.exity = self.mid_w, self.mid_h + 120
+        self.exitx, self.exity = self.mid_w, self.mid_h + 90
         self.cursor_rect.midtop = (self.titlex + self.offset, self.titley)
 
     def display_menu(self):
@@ -39,7 +38,6 @@ class Menu_screen(Menu):
             self.game.draw_text("infection", 45, self.game.screen_w / 2, self.game.screen_h / 2 - 40) #DIBUJAR TITULO PANTALLA
             self.game.draw_text("Juego", 30, self.titlex, self.titley) #DIBUJAR "botones" pantalla
             self.game.draw_text("Reglas", 30, self.reglasx, self.reglasy) #DIBUJAR "botones" pantalla
-            self.game.draw_text("Datos", 30, self.datosx, self.datosy) #DIBUJAR "botones" pantalla
             self.game.draw_text("Exit", 30, self.exitx, self.exity) #DIBUJAR "botones" pantalla
             self.draw_cursor() #dibujar el cursor con sus cordenadas
             self.blit_screen() #actualizar pantalla
@@ -51,9 +49,6 @@ class Menu_screen(Menu):
                 self.cursor_rect.midtop = (self.reglasx + self.offset, self.reglasy)
                 self.state = 'Reglas'
             elif self.state == 'Reglas':
-                self.cursor_rect.midtop = (self.datosx + self.offset, self.datosy)
-                self.state = 'Datos'
-            elif self.state == 'Datos':
                 self.cursor_rect.midtop = (self.exitx + self.offset, self.exity)
                 self.state = 'Exit'
             elif self.state == 'Exit':
@@ -63,15 +58,13 @@ class Menu_screen(Menu):
             if self.state == 'Start':
                 self.cursor_rect.midtop = (self.exitx + self.offset, self.exity)
                 self.state = 'Exit'
-            elif self.state == 'Datos':
+            elif self.state == 'Exit':
                 self.cursor_rect.midtop = (self.reglasx + self.offset, self.reglasy)
                 self.state = 'Reglas'
             elif self.state == 'Reglas':
                 self.cursor_rect.midtop = (self.titlex + self.offset, self.titley)
                 self.state = 'Start'
-            elif self.state == 'Exit':
-                self.cursor_rect.midtop = (self.datosx + self.offset, self.datosy)
-                self.state = 'Datos'
+            
 
     def check_input(self):
         self.move_cursor()
