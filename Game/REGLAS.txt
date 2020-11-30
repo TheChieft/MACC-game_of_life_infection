@@ -35,3 +35,4 @@ Datos curiosos del Juego de la vida de 1970
 
 
 En memoria a John Conway fallecido este año.
+

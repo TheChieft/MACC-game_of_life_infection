@@ -1,7 +1,7 @@
 #FINAL_CODE
 import os
 import pygame
-
+from PIL import Image
 class Menu():
     def __init__(self,game):
         self.game=game #usar modulo del juego
@@ -71,7 +71,8 @@ class Menu_screen(Menu):
             if self.state == 'Start':
                 self.game.playing = True
             elif self.state == 'Reglas':
-                self.game.menu_inicial = self.game.reglas
+                a=Image.open('Game\REGLAS.png',"r")
+                a.show()
             elif self.state == 'Exit':
                 self.salir()
             self.run_menu= False
@@ -79,7 +80,4 @@ class Menu_screen(Menu):
     def salir(self):
         self.game.running = False
 
-class Reglas(Menu):
-    archivo=open("Game\REGLAS.txt",encoding="utf8")
-    print(archivo.read())
     

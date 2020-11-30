@@ -46,7 +46,6 @@ class GAME():
         ##MENU *IMPORTANTE*
         self.UP_KEY, self.DOWN_KEY, self.START_KEY = False, False, False #teclas de seleccion menu
         self.menu=Menu_screen(self) #HERENCIA DE Menu() DONDE ESTA LA VISTA DEL MENU
-        self.reglas=Reglas(self) #HERENCIA DEL Menu() DONDE ESTARAN LAS REGLAS DEL JUEGO
         self.menu_inicial=self.menu #COPIA DE LA HERENCIA
         self.display = pygame.Surface((self.screen_w,self.screen_h)) #CREAR UNA ZONA PARA MOSTRAR IMAGENES / TEXTOS
 
