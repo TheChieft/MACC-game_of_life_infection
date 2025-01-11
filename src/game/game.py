@@ -38,6 +38,8 @@ class Game:
                     self.paused = not self.paused
                 elif event.key == pygame.K_r:  # Reiniciar el tablero
                     self.populate_grid()
+                elif event.key == pygame.K_ESCAPE:  # Volver al menú principal
+                    self.running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 col = x // self.cell_size
@@ -46,8 +48,8 @@ class Game:
                 if event.button == 1:  # Clic izquierdo
                     if self.grid[row, col] == 0:
                         self.grid[row, col] = 1  # Crear célula viva
-                    elif self.grid[row, col] == 1:
-                        self.grid[row, col] = 2  # Infectar célula
+                    elif self.grid[row, col] == 1 and self.rules.get("contagion_enabled", False):
+                        self.grid[row, col] = 2  # Infectar célula si el contagio está habilitado
                 elif event.button == 3:  # Clic derecho
                     self.grid[row, col] = 0  # Eliminar célula
 
@@ -132,6 +134,7 @@ class Game:
         instructions = [
             "P: Pausar/Reanudar",
             "R: Reiniciar",
+            "ESC: Volver al menú",
             "Clic izquierdo: Crear/Infectar célula",
             "Clic derecho: Eliminar célula",
         ]
@@ -150,4 +153,4 @@ class Game:
             self.draw_grid()
             self.draw_instructions()
             pygame.display.flip()
-            clock.tick(FPS)
+            clock.tick(FPS // 2)  # Reducir la velocidad del juego

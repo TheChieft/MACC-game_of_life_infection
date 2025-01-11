@@ -6,7 +6,7 @@ CONTAGION_ENABLED = True
 # Configuración general del juego
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-CELL_SIZE = 10
+CELL_SIZE = 15
 FPS = 60
 
 # Colores
