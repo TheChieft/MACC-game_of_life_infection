@@ -35,7 +35,7 @@ _John Horton Conway (1937-2020) murió tristemente durante la pandemia de COVID-
 
 ## 📂 Estructura de Archivos
 ```bash
-Copiar código
+
 project_root/
 ├── assets/
 │   └── fuentes/
@@ -84,15 +84,15 @@ python src\game\main.py
 ### 💡 Controles del Juego
 
 - **P:** Pausar/Reanudar la simulación.
-- **R: **Reiniciar el tablero con una nueva disposición aleatoria.
+- **R:** Reiniciar el tablero con una nueva disposición aleatoria.
 - **ESC:** Volver al menú principal.
 - **Click izquierdo **sobre una celda muerta: crear célula viva.
 Si la celda era viva y la enfermedad está activada, se infecta.
 - **Click derecho:** eliminar la célula que haya en esa posición.
-- 
+
 Mientras el juego corre, puedes ver:
 
-**Gráfico en tiempo real** (opcional) en la parte superior izquierda con la evolución de vivos, infectados, recuperados y muertos.
+- **Gráfico en tiempo real** (opcional) en la parte superior izquierda con la evolución de vivos, infectados, recuperados y muertos.
 
 ## 📊 Estadísticas y Análisis
 
