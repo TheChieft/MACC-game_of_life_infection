@@ -111,33 +111,94 @@ class MainMenu(BaseMenu):
                     self.move_cursor(1)
                 elif event.key == pygame.K_RETURN:
                     self.select_option()
-
 class SettingsMenu(BaseMenu):
     def __init__(self, game):
         super().__init__(game)
         self.options = [
-            ("Tamaño del Mapa", self.adjust_map_size),
+            ("Tamaño del Mapa", self.adjust_map_size_display),
             ("Activar Enfermedad", self.toggle_contagion),
             ("Reglas de Contagio", self.modify_rules),
             ("Restablecer Predeterminadas", self.reset_defaults),
             ("Volver", self.go_back)
         ]
 
-    def adjust_map_size(self):
+    def display_menu(self):
+        self.running = True
+        while self.running:
+            # Reutilizar el fondo de simulación del MainMenu
+            self.game.screen.fill(COLOR_BACKGROUND)
+            self.draw_background_simulation()
+
+            # Dibujar el título del menú de configuración
+            self.draw_text("Configuración", self.title_font, (255, 255, 255), self.game.screen_w // 2, 50)
+
+            # Dibujar las opciones del menú
+            for index, (text, _) in enumerate(self.options):
+                color = (255, 255, 255) if index == self.selected_index else (180, 180, 180)
+                self.draw_text(text, self.font, color, self.game.screen_w // 2, 150 + index * 40)
+
+            # Alinear el cursor con el texto
+            cursor_x_offset = -120  # Ajusta este valor según el diseño
+            self.draw_cursor(self.game.screen_w // 2 + cursor_x_offset, 150 + self.selected_index * 40)
+
+            pygame.display.flip()
+            self.handle_input()
+
+    def draw_background_simulation(self):
+        """Reutiliza el fondo del MainMenu."""
+        cell_size = 20
+        cols = self.game.screen_w // cell_size
+        rows = self.game.screen_h // cell_size
+        grid = np.random.choice([0, 1], size=(rows, cols), p=[0.85, 0.15])
+
+        for y in range(rows):
+            for x in range(cols):
+                color = (50, 50, 50) if grid[y, x] == 1 else (20, 20, 20)
+                pygame.draw.rect(self.game.screen, color, (x * cell_size, y * cell_size, cell_size, cell_size))
+
+    def adjust_map_size_display(self):
         sizes = [("800x600", (800, 600)), ("1024x768", (1024, 768)), ("1280x720", (1280, 720))]
-        current_index = 0
+        selected_index = 0  # Índice para el tamaño seleccionado
 
-        def cycle_size():
-            nonlocal current_index
-            current_index = (current_index + 1) % len(sizes)
-            selected_size = sizes[current_index]
-            self.game.screen_w, self.game.screen_h = selected_size[1]
-            pygame.display.set_mode(selected_size[1])
-            print(f"Tamaño cambiado a {selected_size[0]}")
+        running = True
+        while running:
+            self.game.screen.fill(COLOR_BACKGROUND)
+            self.draw_background_simulation()
 
-        cycle_size()
+            self.draw_text("Elige un tamaño", self.title_font, (255, 255, 255), self.game.screen_w // 2, 50)
+
+            for index, (label, _) in enumerate(sizes):
+                color = (255, 255, 255) if index == selected_index else (180, 180, 180)
+                self.draw_text(label, self.font, color, self.game.screen_w // 2, 150 + index * 40)
+
+            # Mostrar cursor alineado
+            cursor_x_offset = -120
+            self.draw_cursor(self.game.screen_w // 2 + cursor_x_offset, 150 + selected_index * 40)
+
+            pygame.display.flip()
+
+            # Manejo de entradas
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        selected_index = (selected_index - 1) % len(sizes)
+                    elif event.key == pygame.K_DOWN:
+                        selected_index = (selected_index + 1) % len(sizes)
+                    elif event.key == pygame.K_RETURN:
+                        # Cambiar el tamaño del mapa al seleccionado
+                        selected_size = sizes[selected_index]
+                        self.game.screen_w, self.game.screen_h = selected_size[1]
+                        pygame.display.set_mode(selected_size[1])
+                        print(f"Tamaño cambiado a {selected_size[0]}")
+                        running = False
+                    elif event.key == pygame.K_ESCAPE:
+                        running = False
 
     def toggle_contagion(self):
+        global CONTAGION_ENABLED
         CONTAGION_ENABLED = not CONTAGION_ENABLED
         print(f"Contagio {'activado' if CONTAGION_ENABLED else 'desactivado'}")
 
