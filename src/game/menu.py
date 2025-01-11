@@ -81,9 +81,16 @@ class MainMenu(BaseMenu):
           screen_width=self.game.screen_w,
           screen_height=self.game.screen_h,
           cell_size=CELL_SIZE,
-          rules=self.game.rules  # Reglas actuales desde el menú
+          rules={
+              "contagion_enabled": CONTAGION_ENABLED,  # Asegurar que se pase el estado inicial
+              "contagion_prob_near": CONTAGION_PROB_NEAR,
+              "contagion_prob_distant": CONTAGION_PROB_DISTANT,
+              "recovery_prob": RECOVERY_PROB,
+              "mortality_prob": MORTALITY_PROB,
+          },
       )
       game_instance.run()
+
 
 
     def open_settings(self):
@@ -124,13 +131,14 @@ class SettingsMenu(BaseMenu):
         self.update_options()
 
     def update_options(self):
-        contagion_status = "activado" if self.game.contagion_enabled else "desactivado"
-        self.options = [
-            ("Tamaño del Mapa", self.adjust_map_size_display),
-            (f"Activar Enfermedad ({contagion_status})", self.toggle_contagion),
-            ("Reglas de Contagio", self.modify_rules),
-            ("Volver", self.go_back)
-        ]
+      contagion_status = "activado" if self.game.rules.get("contagion_enabled", False) else "desactivado"
+      self.options = [
+          ("Tamaño del Mapa", self.adjust_map_size_display),
+          (f"Activar Enfermedad ({contagion_status})", self.toggle_contagion),
+          ("Reglas de Contagio", self.modify_rules),
+          ("Volver", self.go_back),
+      ]
+
 
     def display_menu(self):
         self.running = True
@@ -158,9 +166,11 @@ class SettingsMenu(BaseMenu):
             self.handle_input()
 
     def toggle_contagion(self):
-        self.game.contagion_enabled = not self.game.contagion_enabled
-        estado = "activado" if self.game.contagion_enabled else "desactivado"
-        print(f"Contagio {estado}")
+      self.game.rules["contagion_enabled"] = not self.game.rules.get("contagion_enabled", True)
+      estado = "activado" if self.game.rules["contagion_enabled"] else "desactivado"
+      print(f"Contagio {estado}")
+
+
 
     def draw_background_simulation(self):
         """Reutiliza el fondo del MainMenu."""

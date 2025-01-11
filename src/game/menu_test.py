@@ -1,12 +1,8 @@
 import sys
 import os
 import pygame
-
-
-# Agregar la ruta raíz del proyecto al sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
 from menu import MainMenu
+from src.utils.constants import CONTAGION_ENABLED, CONTAGION_PROB_NEAR, CONTAGION_PROB_DISTANT, MORTALITY_PROB, RECOVERY_PROB
 
 class Game:
     def __init__(self):
@@ -17,18 +13,18 @@ class Game:
         pygame.display.set_caption("Prueba del Menú")
         self.running = True
         self.playing = False
-        self.contagion_enabled = True  # Estado inicial de la enfermedad
-        # Reglas iniciales del juego
         self.rules = {
-            "contagion_prob_near": 0.3,  # Probabilidad de contagio cercano
-            "contagion_prob_distant": 0.1,  # Probabilidad de contagio a distancia
-            "mortality_prob": 0.05,  # Probabilidad de que una celda infectada muera
-            "recovery_prob": 0.2,  # Probabilidad de recuperación
+            "contagion_enabled": CONTAGION_ENABLED,
+            "contagion_prob_near": CONTAGION_PROB_NEAR,
+            "contagion_prob_distant": CONTAGION_PROB_DISTANT,
+            "mortality_prob": MORTALITY_PROB,
+            "recovery_prob": RECOVERY_PROB,
         }
 
     def run(self):
         main_menu = MainMenu(self)
         main_menu.display_menu()
+
 
 if __name__ == "__main__":
     game = Game()

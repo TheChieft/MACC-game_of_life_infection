@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import pandas as pd
 from src.utils.constants import *
 
 class Game:
@@ -29,61 +30,65 @@ class Game:
         self.grid = np.random.choice([0, 1], size=(self.rows, self.cols), p=[0.85, 0.15])
 
     def handle_events(self):
-        """Gestiona los eventos del juego, como teclado y ratón."""
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # Pausar el juego
-                    self.paused = not self.paused
-                elif event.key == pygame.K_r:  # Reiniciar el tablero
-                    self.populate_grid()
-                elif event.key == pygame.K_ESCAPE:  # Volver al menú principal
-                    self.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                col = x // self.cell_size
-                row = y // self.cell_size
+      """Gestiona los eventos del juego, como teclado y ratón."""
+      for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+              self.running = False
+          elif event.type == pygame.KEYDOWN:
+              if event.key == pygame.K_p:  # Pausar el juego
+                  self.paused = not self.paused
+              elif event.key == pygame.K_r:  # Reiniciar el tablero
+                  self.populate_grid()
+              elif event.key == pygame.K_ESCAPE:  # Volver al menú principal
+                  self.running = False
+          elif event.type == pygame.MOUSEBUTTONDOWN:
+              x, y = event.pos
+              col = x // self.cell_size
+              row = y // self.cell_size
 
-                if event.button == 1:  # Clic izquierdo
-                    if self.grid[row, col] == 0:
-                        self.grid[row, col] = 1  # Crear célula viva
-                    elif self.grid[row, col] == 1 and self.rules.get("contagion_enabled", False):
-                        self.grid[row, col] = 2  # Infectar célula si el contagio está habilitado
-                elif event.button == 3:  # Clic derecho
-                    self.grid[row, col] = 0  # Eliminar célula
+              if event.button == 1:  # Clic izquierdo
+                  if self.grid[row, col] == 0:
+                      self.grid[row, col] = 1  # Crear célula viva
+                  elif self.grid[row, col] == 1:
+                      if self.rules.get("contagion_enabled", False):  # Infectar si está habilitado
+                          self.grid[row, col] = 2
+              elif event.button == 3:  # Clic derecho
+                  self.grid[row, col] = 0  # Eliminar célula
+
 
     def update_grid(self):
-        """Actualiza el tablero según las reglas del Juego de la Vida y las reglas de contagio."""
-        if self.paused:
-            return
+      """Actualiza el tablero según las reglas del Juego de la Vida y las reglas de contagio."""
+      if self.paused:
+        return
 
-        new_grid = self.grid.copy()
+      new_grid = self.grid.copy()
 
-        for y in range(self.rows):
-            for x in range(self.cols):
-                # Contar vecinos vivos
-                neighbors = self.get_live_neighbors(x, y)
+      for y in range(self.rows):
+        for x in range(self.cols):
+          # Contar vecinos vivos
+          neighbors = self.get_live_neighbors(x, y)
 
-                if self.grid[y, x] == 1:  # Viva
-                    if neighbors < 2 or neighbors > 3:
-                        new_grid[y, x] = 0  # Muere por soledad o sobrepoblación
-                elif self.grid[y, x] == 0:  # Muerta
-                    if neighbors == 3:
-                        new_grid[y, x] = 1  # Nace por reproducción
+          if self.grid[y, x] == 1:  # Viva
+            if neighbors < 2 or neighbors > 3:
+              new_grid[y, x] = 0  # Muere por soledad o sobrepoblación
+          elif self.grid[y, x] == 0:  # Muerta
+            if neighbors == 3:
+              new_grid[y, x] = 1  # Nace por reproducción
 
-                # Reglas de contagio
-                if self.grid[y, x] == 1 and self.rules.get("contagion_enabled", False):
-                    if np.random.rand() < self.rules["contagion_prob_near"] and self.has_infected_neighbors(x, y):
-                        new_grid[y, x] = 2  # Se infecta
+          # Reglas de contagio
+          if self.grid[y, x] == 1 and self.rules.get("contagion_enabled", False):
+            if np.random.rand() < self.rules["contagion_prob_near"] and self.has_infected_neighbors(x, y):
+              new_grid[y, x] = 2  # Se infecta
 
-                if self.grid[y, x] == 2:  # Infectada
-                    if np.random.rand() < self.rules["recovery_prob"]:
-                        new_grid[y, x] = 3  # Se recupera
-                    elif np.random.rand() < self.rules["mortality_prob"]:
-                        new_grid[y, x] = 0  # Muere
+          if self.grid[y, x] == 2:  # Infectada
+            if np.random.rand() < self.rules["recovery_prob"]:
+              new_grid[y, x] = 3  # Se recupera
+            elif np.random.rand() < self.rules["mortality_prob"]:
+              new_grid[y, x] = 0  # Muere
 
-        self.grid = new_grid
+      self.grid = new_grid
+
+        
 
     def get_live_neighbors(self, x, y):
         """Cuenta los vecinos vivos de una celda."""
@@ -129,28 +134,65 @@ class Game:
                 )
 
     def draw_instructions(self):
-        """Dibuja las instrucciones en la parte inferior de la pantalla."""
-        font = pygame.font.Font(None, 24)
-        instructions = [
-            "P: Pausar/Reanudar",
-            "R: Reiniciar",
-            "ESC: Volver al menú",
-            "Clic izquierdo: Crear/Infectar célula",
-            "Clic derecho: Eliminar célula",
-        ]
-        for i, text in enumerate(instructions):
-            text_surface = font.render(text, True, (255, 255, 255))
-            self.screen.blit(text_surface, (10, self.screen_height - (len(instructions) - i) * 20))
+      """Dibuja las instrucciones en la parte inferior de la pantalla."""
+      font = pygame.font.Font(None, 24)
+      instructions = [
+          "P: Pausar/Reanudar",
+          "R: Reiniciar",
+          "ESC: Volver al menú",
+          "Clic izquierdo: Crear/Infectar célula",
+          "Clic derecho: Eliminar célula",
+      ]
+      for i, text in enumerate(instructions):
+          text_surface = font.render(text, True, (255, 255, 255))
+          self.screen.blit(text_surface, (10, self.screen_height - (len(instructions) - i) * 20))
+
+      # Mostrar si la enfermedad está habilitada
+      contagion_status = "ON" if self.rules.get("contagion_enabled", False) else "OFF"
+      status_surface = font.render(f"Contagio: {contagion_status}", True, (255, 255, 0))
+      self.screen.blit(status_surface, (10, self.screen_height - (len(instructions) + 1) * 20))
+
+
+
 
     def run(self):
         """Bucle principal del juego."""
         clock = pygame.time.Clock()
+# Variables para estadísticas
+        data = {
+            "iteration": [],
+            "alive": [],
+            "infected": [],
+            "recovered": [],
+            "dead": [],
+        }
+        iteration = 0
 
         while self.running:
             self.handle_events()
             self.update_grid()
+
+            # Recoger estadísticas
+            alive = np.sum(self.grid == 1)
+            infected = np.sum(self.grid == 2)
+            recovered = np.sum(self.grid == 3)
+            dead = self.rows * self.cols - (alive + infected + recovered)
+
+            data["iteration"].append(iteration)
+            data["alive"].append(alive)
+            data["infected"].append(infected)
+            data["recovered"].append(recovered)
+            data["dead"].append(dead)
+
             self.screen.fill(COLOR_BACKGROUND)
             self.draw_grid()
             self.draw_instructions()
             pygame.display.flip()
-            clock.tick(FPS // 2)  # Reducir la velocidad del juego
+
+            clock.tick(FPS // 2)
+            iteration += 1
+
+        # Guardar datos al final
+        df = pd.DataFrame(data)
+        df.to_csv("/data/game_data.csv", index=False)
+        print("Datos del juego guardados en game_data.csv")
