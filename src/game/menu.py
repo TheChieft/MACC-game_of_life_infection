@@ -76,8 +76,15 @@ class MainMenu(BaseMenu):
 
 
     def start_game(self):
-        self.game.running = True
-        self.game.playing = True
+      from game import Game  # Importa la clase Game
+      game_instance = Game(
+          screen_width=self.game.screen_w,
+          screen_height=self.game.screen_h,
+          cell_size=CELL_SIZE,
+          rules=self.game.rules  # Reglas actuales desde el menú
+      )
+      game_instance.run()
+
 
     def open_settings(self):
         settings_menu = SettingsMenu(self.game)

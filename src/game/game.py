@@ -38,6 +38,18 @@ class Game:
                     self.paused = not self.paused
                 elif event.key == pygame.K_r:  # Reiniciar el tablero
                     self.populate_grid()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                col = x // self.cell_size
+                row = y // self.cell_size
+
+                if event.button == 1:  # Clic izquierdo
+                    if self.grid[row, col] == 0:
+                        self.grid[row, col] = 1  # Crear célula viva
+                    elif self.grid[row, col] == 1:
+                        self.grid[row, col] = 2  # Infectar célula
+                elif event.button == 3:  # Clic derecho
+                    self.grid[row, col] = 0  # Eliminar célula
 
     def update_grid(self):
         """Actualiza el tablero según las reglas del Juego de la Vida y las reglas de contagio."""
@@ -91,7 +103,7 @@ class Game:
         return False
 
     def draw_grid(self):
-        """Dibuja el tablero en la pantalla."""
+        """Dibuja el tablero en la pantalla con líneas de separación."""
         for y in range(self.rows):
             for x in range(self.cols):
                 color = COLOR_DEAD_CELL
@@ -106,6 +118,26 @@ class Game:
                     color,
                     (x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
                 )
+                # Dibujar líneas de separación
+                pygame.draw.rect(
+                    self.screen,
+                    (200, 200, 200),  # Color de las líneas
+                    (x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
+                    1,
+                )
+
+    def draw_instructions(self):
+        """Dibuja las instrucciones en la parte inferior de la pantalla."""
+        font = pygame.font.Font(None, 24)
+        instructions = [
+            "P: Pausar/Reanudar",
+            "R: Reiniciar",
+            "Clic izquierdo: Crear/Infectar célula",
+            "Clic derecho: Eliminar célula",
+        ]
+        for i, text in enumerate(instructions):
+            text_surface = font.render(text, True, (255, 255, 255))
+            self.screen.blit(text_surface, (10, self.screen_height - (len(instructions) - i) * 20))
 
     def run(self):
         """Bucle principal del juego."""
@@ -116,6 +148,6 @@ class Game:
             self.update_grid()
             self.screen.fill(COLOR_BACKGROUND)
             self.draw_grid()
+            self.draw_instructions()
             pygame.display.flip()
             clock.tick(FPS)
-
