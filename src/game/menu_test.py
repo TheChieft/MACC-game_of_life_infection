@@ -17,6 +17,7 @@ class Game:
         pygame.display.set_caption("Prueba del Menú")
         self.running = True
         self.playing = False
+        self.contagion_enabled = True  # Estado inicial de la enfermedad
 
     def run(self):
         main_menu = MainMenu(self)

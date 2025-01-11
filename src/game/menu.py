@@ -114,9 +114,13 @@ class MainMenu(BaseMenu):
 class SettingsMenu(BaseMenu):
     def __init__(self, game):
         super().__init__(game)
+        self.update_options()
+
+    def update_options(self):
+        contagion_status = "activado" if self.game.contagion_enabled else "desactivado"
         self.options = [
             ("Tamaño del Mapa", self.adjust_map_size_display),
-            ("Activar Enfermedad", self.toggle_contagion),
+            (f"Activar Enfermedad ({contagion_status})", self.toggle_contagion),
             ("Reglas de Contagio", self.modify_rules),
             ("Restablecer Predeterminadas", self.reset_defaults),
             ("Volver", self.go_back)
@@ -125,6 +129,9 @@ class SettingsMenu(BaseMenu):
     def display_menu(self):
         self.running = True
         while self.running:
+            # Actualizar las opciones del menú para reflejar el estado actual
+            self.update_options()
+            
             # Reutilizar el fondo de simulación del MainMenu
             self.game.screen.fill(COLOR_BACKGROUND)
             self.draw_background_simulation()
@@ -143,6 +150,11 @@ class SettingsMenu(BaseMenu):
 
             pygame.display.flip()
             self.handle_input()
+
+    def toggle_contagion(self):
+        self.game.contagion_enabled = not self.game.contagion_enabled
+        estado = "activado" if self.game.contagion_enabled else "desactivado"
+        print(f"Contagio {estado}")
 
     def draw_background_simulation(self):
         """Reutiliza el fondo del MainMenu."""
@@ -196,11 +208,6 @@ class SettingsMenu(BaseMenu):
                         running = False
                     elif event.key == pygame.K_ESCAPE:
                         running = False
-
-    def toggle_contagion(self):
-        global CONTAGION_ENABLED
-        CONTAGION_ENABLED = not CONTAGION_ENABLED
-        print(f"Contagio {'activado' if CONTAGION_ENABLED else 'desactivado'}")
 
     def modify_rules(self):
         print("Modificar reglas de contagio: Placeholder")

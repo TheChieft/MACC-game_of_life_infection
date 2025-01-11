@@ -1,5 +1,8 @@
 # constants.py
 
+# Activar o desactivar la enfermedad
+CONTAGION_ENABLED = True
+
 # Configuración general del juego
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
