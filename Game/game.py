@@ -4,7 +4,7 @@ import pygame
 import random
 import time
 import numpy as np
-from menu import *
+from src.game.menu import *
 import sys
 
 
