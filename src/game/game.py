@@ -12,7 +12,6 @@ class Game:
         self.running = True
         self.paused = False
 
-        # Inicializar Pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Game of Life Infection")
@@ -22,95 +21,130 @@ class Game:
         self.rows = self.screen_height // self.cell_size
         self.grid = np.zeros((self.rows, self.cols), dtype=int)
 
-        # Estados: 0 = muerta, 1 = viva, 2 = infectada, 3 = recuperada
+        # Manejo de inmunidad
+        self.immunity_counters = np.zeros((self.rows, self.cols), dtype=int)
+
         self.populate_grid()
+
+        # Variables para estadísticas (si quieres rastrear total infectados, etc.)
+        self.total_infected_ever = 0
 
     def populate_grid(self):
         """Inicializa el tablero con celdas vivas y muertas aleatoriamente."""
         self.grid = np.random.choice([0, 1], size=(self.rows, self.cols), p=[0.85, 0.15])
+        self.immunity_counters.fill(0)
 
     def handle_events(self):
-      """Gestiona los eventos del juego, como teclado y ratón."""
-      for event in pygame.event.get():
-          if event.type == pygame.QUIT:
-              self.running = False
-          elif event.type == pygame.KEYDOWN:
-              if event.key == pygame.K_p:  # Pausar el juego
-                  self.paused = not self.paused
-              elif event.key == pygame.K_r:  # Reiniciar el tablero
-                  self.populate_grid()
-              elif event.key == pygame.K_ESCAPE:  # Volver al menú principal
-                  self.running = False
-          elif event.type == pygame.MOUSEBUTTONDOWN:
-              x, y = event.pos
-              col = x // self.cell_size
-              row = y // self.cell_size
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # Pausar el juego
+                    self.paused = not self.paused
+                elif event.key == pygame.K_r:  # Reiniciar el tablero
+                    self.populate_grid()
+                elif event.key == pygame.K_ESCAPE:  # Volver al menú principal
+                    self.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                col = x // self.cell_size
+                row = y // self.cell_size
 
-              if event.button == 1:  # Clic izquierdo
-                  if self.grid[row, col] == 0:
-                      self.grid[row, col] = 1  # Crear célula viva
-                  elif self.grid[row, col] == 1:
-                      if self.rules.get("contagion_enabled", False):  # Infectar si está habilitado
-                          self.grid[row, col] = 2
-              elif event.button == 3:  # Clic derecho
-                  self.grid[row, col] = 0  # Eliminar célula
+                if event.button == 1:  # Clic izquierdo
+                    if self.grid[row, col] == 0:
+                        self.grid[row, col] = 1  # Crear célula viva
+                    elif self.grid[row, col] == 1:
+                        if self.rules.get("contagion_enabled", False):
+                            self.grid[row, col] = 2  # Infectar manualmente
+                            self.total_infected_ever += 1
+                elif event.button == 3:  # Clic derecho
+                    self.grid[row, col] = 0  # Eliminar célula
+                    self.immunity_counters[row, col] = 0
 
 
     def update_grid(self):
-      """Actualiza el tablero según las reglas del Juego de la Vida y las reglas de contagio."""
-      if self.paused:
-        return
+        if self.paused:
+            return
 
-      new_grid = self.grid.copy()
+        new_grid = self.grid.copy()
+        new_immunity = self.immunity_counters.copy()
 
-      for y in range(self.rows):
-        for x in range(self.cols):
-          # Contar vecinos vivos
-          neighbors = self.get_live_neighbors(x, y)
+        for y in range(self.rows):
+            for x in range(self.cols):
+                current_state = self.grid[y, x]
+                neighbors = self.get_live_neighbors(x, y)
 
-          if self.grid[y, x] == 1:  # Viva
-            if neighbors < 2 or neighbors > 3:
-              new_grid[y, x] = 0  # Muere por soledad o sobrepoblación
-          elif self.grid[y, x] == 0:  # Muerta
-            if neighbors == 3:
-              new_grid[y, x] = 1  # Nace por reproducción
+                # 1) Aplicar reglas clásicas de Conway (para estados 1 y 3, si deseas) 
+                if current_state in [1, 3]:  
+                    # Muere por soledad o sobrepoblación
+                    if neighbors < 2 or neighbors > 3:
+                        new_grid[y, x] = 0
+                        new_immunity[y, x] = 0
+                elif current_state == 0:
+                    # Nace una célula (estado 1) si tiene 3 vecinos vivos/infectados/recuperados
+                    if neighbors == 3:
+                        new_grid[y, x] = 1
+                        new_immunity[y, x] = 0
 
-          # Reglas de contagio
-          if self.grid[y, x] == 1 and self.rules.get("contagion_enabled", False):
-            if np.random.rand() < self.rules["contagion_prob_near"] and self.has_infected_neighbors(x, y):
-              new_grid[y, x] = 2  # Se infecta
+                # 2) Reglas de infección
+                if current_state == 1 and self.rules.get("contagion_enabled", False):
+                    # Probabilidad de contagio si hay infectados cerca
+                    if np.random.rand() < self.rules["contagion_prob_near"] and self.has_infected_neighbors(x, y):
+                        new_grid[y, x] = 2
+                        self.total_infected_ever += 1
 
-          if self.grid[y, x] == 2:  # Infectada
-            if np.random.rand() < self.rules["recovery_prob"]:
-              new_grid[y, x] = 3  # Se recupera
-            elif np.random.rand() < self.rules["mortality_prob"]:
-              new_grid[y, x] = 0  # Muere
+                # 3) Estado infectado (2)
+                if current_state == 2:
+                    # Se recupera con cierta probabilidad
+                    if np.random.rand() < self.rules["recovery_prob"]:
+                        new_grid[y, x] = 3
+                        new_immunity[y, x] = 0  # Comienza el conteo de inmunidad
+                    # Muere con probabilidad
+                    elif np.random.rand() < self.rules["mortality_prob"]:
+                        new_grid[y, x] = 0
+                        new_immunity[y, x] = 0
 
-      self.grid = new_grid
+                # 4) Estado recuperado (3) → contar inmunidad
+                if current_state == 3:
+                    # Ya aplicamos las reglas de Conway al inicio (si deseas)
+                    # Incrementamos el contador de inmunidad
+                    new_immunity[y, x] += 1
+                    # Chequeamos si superó IMMUNITY_DURATION
+                    if new_immunity[y, x] >= IMMUNITY_DURATION:
+                        # Vuelve a ser 1 (viva), susceptible de infectarse
+                        new_grid[y, x] = 1
+                        new_immunity[y, x] = 0
 
-        
+        self.grid = new_grid
+        self.immunity_counters = new_immunity
 
     def get_live_neighbors(self, x, y):
-        """Cuenta los vecinos vivos de una celda."""
-        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-        count = 0
-        for dx, dy in directions:
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < self.cols and 0 <= ny < self.rows and self.grid[ny, nx] in [1, 2]:
-                count += 1
-        return count
+            """Cuenta los vecinos que están en estado 1, 2 o 3 (vivo, infectado o recuperado)."""
+            directions = [(-1, -1), (-1, 0), (-1, 1),
+                          (0, -1),           (0, 1),
+                          (1, -1),  (1, 0),  (1, 1)]
+            count = 0
+            for dx, dy in directions:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.cols and 0 <= ny < self.rows:
+                    # Consideramos 'vivo'(1), 'infectado'(2) y 'recuperado'(3) como vecinos "vivos" para Conway
+                    if self.grid[ny, nx] in [1, 2, 3]:
+                        count += 1
+            return count
 
     def has_infected_neighbors(self, x, y):
-        """Comprueba si una celda tiene vecinos infectados."""
-        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        """Comprueba si hay vecinos infectados (2)."""
+        directions = [(-1, -1), (-1, 0), (-1, 1),
+                      (0, -1),           (0, 1),
+                      (1, -1),  (1, 0),  (1, 1)]
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < self.cols and 0 <= ny < self.rows and self.grid[ny, nx] == 2:
-                return True
+            if 0 <= nx < self.cols and 0 <= ny < self.rows:
+                if self.grid[ny, nx] == 2:
+                    return True
         return False
 
     def draw_grid(self):
-        """Dibuja el tablero en la pantalla con líneas de separación."""
         for y in range(self.rows):
             for x in range(self.cols):
                 color = COLOR_DEAD_CELL
@@ -120,37 +154,36 @@ class Game:
                     color = COLOR_INFECTED_CELL
                 elif self.grid[y, x] == 3:
                     color = (0, 255, 0)  # Verde para recuperadas
+
                 pygame.draw.rect(
                     self.screen,
                     color,
                     (x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
                 )
-                # Dibujar líneas de separación
                 pygame.draw.rect(
                     self.screen,
-                    (200, 200, 200),  # Color de las líneas
+                    (200, 200, 200),
                     (x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
                     1,
                 )
 
     def draw_instructions(self):
-      """Dibuja las instrucciones en la parte inferior de la pantalla."""
-      font = pygame.font.Font(None, 24)
-      instructions = [
-          "P: Pausar/Reanudar",
-          "R: Reiniciar",
-          "ESC: Volver al menú",
-          "Clic izquierdo: Crear/Infectar célula",
-          "Clic derecho: Eliminar célula",
-      ]
-      for i, text in enumerate(instructions):
-          text_surface = font.render(text, True, (255, 255, 255))
-          self.screen.blit(text_surface, (10, self.screen_height - (len(instructions) - i) * 20))
+        font = pygame.font.Font(None, 24)
+        instructions = [
+            "P: Pausar/Reanudar",
+            "R: Reiniciar",
+            "ESC: Volver al menú",
+            "Click izq: Crear / Infectar célula",
+            "Click der: Eliminar célula",
+        ]
+        for i, text in enumerate(instructions):
+            text_surface = font.render(text, True, (255, 255, 255))
+            self.screen.blit(text_surface, (10, self.screen_height - (len(instructions) - i) * 20))
 
-      # Mostrar si la enfermedad está habilitada
-      contagion_status = "ON" if self.rules.get("contagion_enabled", False) else "OFF"
-      status_surface = font.render(f"Contagio: {contagion_status}", True, (255, 255, 0))
-      self.screen.blit(status_surface, (10, self.screen_height - (len(instructions) + 1) * 20))
+        contagion_status = "ON" if self.rules.get("contagion_enabled", False) else "OFF"
+        status_surface = font.render(f"Contagio: {contagion_status}", True, (255, 255, 0))
+        self.screen.blit(status_surface, (10, self.screen_height - (len(instructions) + 1) * 20))
+
 
     def draw_realtime_chart(self, data_dict, pos_x, pos_y, width, height, max_points=100):
       """
@@ -216,9 +249,7 @@ class Game:
 
 
     def run(self):
-        """Bucle principal del juego."""
         clock = pygame.time.Clock()
-# Variables para estadísticas
         data = {
             "iteration": [],
             "alive": [],
@@ -233,10 +264,10 @@ class Game:
             self.update_grid()
 
             # Recoger estadísticas
-            alive = np.sum(self.grid == 1)
+            alive = np.sum(self.grid == 1) + np.sum(self.grid == 3)  # sumamos 1 y 3 como "vivas"
             infected = np.sum(self.grid == 2)
             recovered = np.sum(self.grid == 3)
-            dead = self.rows * self.cols - (alive + infected + recovered)
+            dead = self.rows * self.cols - (alive + infected)
 
             data["iteration"].append(iteration)
             data["alive"].append(alive)
@@ -247,35 +278,32 @@ class Game:
             self.screen.fill(COLOR_BACKGROUND)
             self.draw_grid()
             self.draw_instructions()
-            # Justo antes de pygame.display.flip()
-            self.draw_realtime_chart(data,
-                pos_x=self.screen_width - 220, 
-                pos_y=10,
-                width=120,
-                height=80,
-                max_points=100
-            )
-
+            self.draw_realtime_chart(data, 10, 10, 150, 100)
             pygame.display.flip()
 
-            clock.tick(FPS // 4)
+            clock.tick(FPS // 2)
             iteration += 1
 
-        # Guardar datos al final
+        # GUARDAR DATOS (ver parte 2)
         df = pd.DataFrame(data)
-        df.to_csv("/data/game_data.csv", index=False)
-        print("Datos del juego guardados en game_data.csv")
+        output_file = "analysis/game_data.csv"  # Ruta sugerida (crea la carpeta si no existe)
+        df.to_csv(output_file, index=False)
+        print(f"Datos del juego guardados en: {output_file}")
 
-        # Hacer un pequeño resumen
+        # Resumen final (ejemplo)
         max_infected = df["infected"].max()
-        iteration_of_max_infected = df["infected"].idxmax()
+        it_max_infected = df["infected"].idxmax()
         final_alive = df["alive"].iloc[-1]
         final_infected = df["infected"].iloc[-1]
         final_recovered = df["recovered"].iloc[-1]
         final_dead = df["dead"].iloc[-1]
 
         print("\n--- Resumen Estadístico ---")
-        print(f"Máximo de infectados: {max_infected} (en iteración {iteration_of_max_infected})")
+        print(f"Partida con {iteration} iteraciones totales")
+        print(f"Máximo de infectados: {max_infected} (iteración {it_max_infected})")
         print(f"Vivas finales: {final_alive} | Infectadas finales: {final_infected}")
         print(f"Recuperadas finales: {final_recovered} | Muertas finales: {final_dead}")
         print("--------------------------------\n")
+
+        pygame.quit()
+        # Fin del Game.run()
