@@ -1,14 +1,16 @@
 import pygame
 import numpy as np
 import random
+from src.utils.constants import *
 
 class BaseMenu:
     def __init__(self, game):
         self.game = game
         self.options = []  # Lista de opciones (texto, acción)
         self.selected_index = 0
-        self.font = pygame.font.Font("assets/fuentes/Fuente.ttf", 30)
-        self.title_font = pygame.font.Font("assets/fuentes/Fuente.ttf", 60)
+        self.font = pygame.font.Font(FONT_PATH, 20)
+        self.title_font = pygame.font.Font(FONT_PATH, 40)
+
 
     def draw_text(self, text, font, color, x, y):
         text_surface = font.render(text, True, color)
@@ -16,7 +18,7 @@ class BaseMenu:
         self.game.screen.blit(text_surface, text_rect)
 
     def draw_cursor(self, x, y):
-        pygame.draw.polygon(self.game.screen, (255, 255, 255), [
+        pygame.draw.polygon(self.game.screen, COLOR_CURSOR, [
             (x, y - 10), (x + 10, y), (x, y + 10)
         ])
 
@@ -26,6 +28,21 @@ class BaseMenu:
     def select_option(self):
         _, action = self.options[self.selected_index]
         action()
+
+    def handle_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.go_back()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.move_cursor(-1)
+                elif event.key == pygame.K_DOWN:
+                    self.move_cursor(1)
+                elif event.key == pygame.K_RETURN:
+                    self.select_option()
+
+    def go_back(self):
+        self.game.running = False
 
     def display_menu(self):
         raise NotImplementedError("display_menu must be implemented by subclasses")
@@ -39,34 +56,38 @@ class MainMenu(BaseMenu):
             ("Salir", self.exit_game)
         ]
 
+    def display_menu(self):
+        self.running = True
+        while self.running:
+            self.game.screen.fill(COLOR_BACKGROUND)
+            self.draw_background_simulation()
+
+            # Ajustar el título y las opciones al nuevo diseño
+            self.draw_text("GAME OF LIFE", self.title_font, (255, 255, 255), self.game.screen_w // 2, 50)
+
+            for index, (text, _) in enumerate(self.options):
+                color = (255, 255, 255) if index == self.selected_index else (180, 180, 180)
+                self.draw_text(text, self.font, color, self.game.screen_w // 2, 150 + index * 40)
+
+            self.draw_cursor(self.game.screen_w // 2 - 150, 150 + self.selected_index * 40)
+
+            pygame.display.flip()
+            self.handle_input()
+
+
     def start_game(self):
         self.game.running = True
         self.game.playing = True
 
     def open_settings(self):
-        print("Abrir configuración (placeholder)")
+        settings_menu = SettingsMenu(self.game)
+        settings_menu.display_menu()
 
     def exit_game(self):
         self.game.running = False
         pygame.quit()
         quit()
 
-    def display_menu(self):
-        self.running = True
-        while self.running:
-            self.game.screen.fill((0, 0, 0))  # Fondo negro temporal
-            self.draw_background_simulation()  # Fondo dinámico
-
-            self.draw_text("GAME OF LIFE", self.title_font, (255, 255, 255), self.game.screen_w // 2, 100)
-
-            for index, (text, _) in enumerate(self.options):
-                color = (255, 255, 255) if index == self.selected_index else (180, 180, 180)
-                self.draw_text(text, self.font, color, self.game.screen_w // 2, 200 + index * 50)
-
-            self.draw_cursor(self.game.screen_w // 2 - 100, 200 + self.selected_index * 50)
-
-            pygame.display.flip()
-            self.handle_input()
 
     def draw_background_simulation(self):
         cell_size = 20
@@ -90,3 +111,47 @@ class MainMenu(BaseMenu):
                     self.move_cursor(1)
                 elif event.key == pygame.K_RETURN:
                     self.select_option()
+
+class SettingsMenu(BaseMenu):
+    def __init__(self, game):
+        super().__init__(game)
+        self.options = [
+            ("Tamaño del Mapa", self.adjust_map_size),
+            ("Activar Enfermedad", self.toggle_contagion),
+            ("Reglas de Contagio", self.modify_rules),
+            ("Restablecer Predeterminadas", self.reset_defaults),
+            ("Volver", self.go_back)
+        ]
+
+    def adjust_map_size(self):
+        sizes = [("800x600", (800, 600)), ("1024x768", (1024, 768)), ("1280x720", (1280, 720))]
+        current_index = 0
+
+        def cycle_size():
+            nonlocal current_index
+            current_index = (current_index + 1) % len(sizes)
+            selected_size = sizes[current_index]
+            self.game.screen_w, self.game.screen_h = selected_size[1]
+            pygame.display.set_mode(selected_size[1])
+            print(f"Tamaño cambiado a {selected_size[0]}")
+
+        cycle_size()
+
+    def toggle_contagion(self):
+        CONTAGION_ENABLED = not CONTAGION_ENABLED
+        print(f"Contagio {'activado' if CONTAGION_ENABLED else 'desactivado'}")
+
+    def modify_rules(self):
+        print("Modificar reglas de contagio: Placeholder")
+
+    def reset_defaults(self):
+        global SCREEN_WIDTH, SCREEN_HEIGHT, CONTAGION_ENABLED, CONTAGION_PROB_NEAR, CONTAGION_PROB_DISTANT
+        SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+        CONTAGION_ENABLED = True
+        CONTAGION_PROB_NEAR = 0.3
+        CONTAGION_PROB_DISTANT = 0.1
+        pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        print("Opciones restablecidas a los valores predeterminados.")
+
+    def go_back(self):
+        self.running = False

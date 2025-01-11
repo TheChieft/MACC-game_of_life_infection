@@ -1,4 +1,11 @@
+import sys
+import os
 import pygame
+
+
+# Agregar la ruta raíz del proyecto al sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+
 from menu import MainMenu
 
 class Game:
