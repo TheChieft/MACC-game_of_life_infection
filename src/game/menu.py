@@ -76,20 +76,15 @@ class MainMenu(BaseMenu):
 
 
     def start_game(self):
-      from game import Game  # Importa la clase Game
+      from game import Game  # Importa la clase Game de game.py
       game_instance = Game(
           screen_width=self.game.screen_w,
           screen_height=self.game.screen_h,
           cell_size=CELL_SIZE,
-          rules={
-              "contagion_enabled": CONTAGION_ENABLED,  # Asegurar que se pase el estado inicial
-              "contagion_prob_near": CONTAGION_PROB_NEAR,
-              "contagion_prob_distant": CONTAGION_PROB_DISTANT,
-              "recovery_prob": RECOVERY_PROB,
-              "mortality_prob": MORTALITY_PROB,
-          },
+          rules=self.game.rules  # <<--- aquí pasamos todo el diccionario actualizado
       )
       game_instance.run()
+
 
 
 
