@@ -1,35 +1,127 @@
-# MACC-game_of_life_infection
-From the game of life (cellular automata) created by john Horton Conway, create design new present rules implementing the possibility of contagion of different diseases creating another possible way of death
+# MACC - Game of Life Infection
+¡Bienvenido/a a MACC - Game of Life Infection! Este proyecto combina el clásico “Juego de la Vida” de Conway con una simulación de contagio inspirada en la pandemia de COVID-19. La idea es mostrar cómo se comporta una infección dentro de las reglas del famoso autómata celular, y recoger estadísticas de lo que sucede en tiempo real.
 
-Problem: Lack of awareness about the impact that a virus can have on a society and the little importance that is given to individual actions.
+**Nota: El nombre MACC hace referencia a una iteración previa del proyecto. ¡Pero mantuvimos el nombre por nostalgia!**
 
-Course objective: Create a new version of the game of life “It is a two-dimensional cellular automaton in which each cell (cell) can be alive or dead. Starting from an initial state, the simulation makes the automaton evolve. " (John Conway, 1970) where there is a cell with the characteristics of a virus. By analyzing the behavior of the society made up of cells, raise awareness about the impact that a virus can have on a society and the importance of individual actions.
+## ⭐ Características
+- **Reglas originales** del Juego de la Vida:
+  - Una célula viva muere por soledad si tiene menos de 2 vecinos vivos.
+  - Muere por sobrepoblación si tiene más de 3 vecinos vivos.
+  - Una célula muerta nace si tiene exactamente 3 vecinos vivos.
+- **Reglas de contagio** (opcionalmente activables/desactivables):
+  - Una célula viva puede infectarse con cierta probabilidad si tiene vecinos infectados.
+  - Una célula infectada puede:
+    - Recuperarse con cierta probabilidad.
+    - Morir por la infección (probabilidad de mortalidad).
+  - Una célula recuperada tiene **inmunidad temporal** y, pasado ese tiempo, **vuelve a ser una célula viva normal**(susceptible de reinfectarse).
+- **Interfaz interactiva** con menús de configuración:
+  - Ajustar la tasa de contagio cercano/lejanía, la probabilidad de recuperación y mortalidad, etc.
+  - Cambiar el tamaño de la ventana.
+  - Activar/desactivar la enfermedad en cualquier momento.
+- **Estadísticas en tiempo real**:
+  - Se dibuja un minigráfico con la evolución de células vivas, infectadas, recuperadas y muertas.
+- **Resumen estadístico** al terminar cada partida (se guarda en data/game_data.csv):
+  - Número de iteraciones, pico de infectados, cantidad final de vivas, infectadas, recuperadas y muertas.
 
-With the work team there are 3 specific objectives that are: the graphical interface, declaration of new rules and creation of analysis of the simulations.
+## ✨ Inspiración
+Este proyecto nació durante la pandemia y tiene como motivación:
 
-----------------------<
+1. **Aprender** sobre autómatas celulares, en especial el clásico “Juego de la Vida” de John Conway.
+2. **Experimentar** con un modelo sencillo de contagio, aproximándose ligeramente a lo que ocurrió en la pandemia de COVID-19.
+3. **Recopilar datos** (nacimientos, infecciones, recuperaciones) y compararlos con la realidad.
 
-ENGLISH
 
-Hello reader. 
-The program separates into two codes "Game" the code without the analysis of the data and 
-graphics created for the simulation and the "Game_datas" the code with the analysis and graphics.
+_John Horton Conway (1937-2020) murió tristemente durante la pandemia de COVID-19. Este trabajo está dedicado a él, en memoria de su gran legado en la matemática recreativa y en la teoría de autómatas celulares._
 
-Why do we do this? ... 
-we do it because we are aware that the "Game_datas" code requires a lot of memory and processor resources,
- so there is a considerable drop in performance, therefore, to enjoy both experiences, the code was separated into two. 
-I hope you can understand that it is for the satisfaction of users with high and low resources.
+## 📂 Estructura de Archivos
+```bash
+Copiar código
+project_root/
+├── assets/
+│   └── fuentes/
+│       └── Fuente.ttf          # Fuente de texto usada por Pygame
+├── data/
+│   └── game_data.csv           # Aquí se guardan las estadísticas de cada partida
+├── src/
+│   ├── utils/
+│   │   └── constants.py        # Variables globales: colores, tamaño de celda, FPS, etc.
+│   ├── game/
+│   │   ├── main.py             # Archivo principal (inicia el menú y la ejecución del proyecto)
+│   │   ├── menu.py             # Menús: MainMenu, SettingsMenu, etc.
+│   │   ├── game.py             # Lógica del Juego de la Vida + infección
+│   │   └── __init__.py
+│   └── analysis/               # (Carpeta opcional para scripts o análisis más avanzados)
+└── README.md                   # Este archivo
+```
 
-----------------------<
+1. ```assets/fuentes```: contiene la tipografía utilizada.
+2. ```data/```: donde se guarda game_data.csv con estadísticas de la última partida.
+3. ```src/utils/constants.py```: configura constantes (colores, probabilidades por defecto, etc.).
+4. ```src/game/main.py```: actúa como launcher del programa, arranca el menú principal.
+5. ```src/game/menu.py```: contiene las diferentes pantallas de menú y la navegación entre ellas.
+6. ```src/game/game.py```: la clase Game con toda la lógica del autómata, las reglas de infección y el bucle principal de renderizado.
 
-ESPAÑOL
+## 🚀 Cómo Ejecutar
+1. **Instalar dependencias** (Python 3, Pygame, Numpy, Pandas):
+```
+pip install pygame numpy pandas
+```
+2. **Posicionarte en la raíz del proyecto** y ejecutar:
+```bash
+# En Linux o Mac:
+PYTHONPATH=. python src/game/main.py
+# En Windows (opción 1):
+set PYTHONPATH=.
+python src\game\main.py
+# En Windows (opción 2 - Powershell):
+$env:PYTHONPATH="."
+python src\game\main.py
+```
+3. **Interacción en el menú**:
+- **Jugar**: te mete al Juego de la Vida con infección (si está activada).
+- **Configuración**: cambiar el tamaño, activar contagio, modificar probabilidades, etc.
+- **Salir**: finaliza la aplicación. 
+### 💡 Controles del Juego
 
-Hola lector. 
-El programa se separa en dos codigos "Game" el codigo sin el analisis de los datos y 
-graficas creadas para la simulacion y el "Game_datas" el codigo con el analisis y graficas.
+- **P:** Pausar/Reanudar la simulación.
+- **R: **Reiniciar el tablero con una nueva disposición aleatoria.
+- **ESC:** Volver al menú principal.
+- **Click izquierdo **sobre una celda muerta: crear célula viva.
+Si la celda era viva y la enfermedad está activada, se infecta.
+- **Click derecho:** eliminar la célula que haya en esa posición.
+- 
+Mientras el juego corre, puedes ver:
 
-¿Por que hacemos esto?... 
-lo hacemos porque somos consientes de que el codigo de "Game_datas" 
-requiere muchos recursos de memoria y procesador por lo que hay una baja de rendimiento considerable,
- por tanto para disfrutar ambas experiencias se separo el codigo en dos. espero puedas comprender que es para 
-la satisfaccion de los usuarios con altos y bajos recursos.
+**Gráfico en tiempo real** (opcional) en la parte superior izquierda con la evolución de vivos, infectados, recuperados y muertos.
+
+## 📊 Estadísticas y Análisis
+
+- Al cerrar una partida, se genera o sobrescribe el archivo data/game_data.csv.
+- Contiene las columnas:
+  - ```iteration```: número de iteración (tiempo discreto).
+  - ```alive```: células vivas (incluidas las recuperadas).
+  - ```infected```: cuántas están en estado de infección.
+  - ```recovered```: cuántas se encuentran en estado recuperado (inmunes temporalmente).
+  - ```dead```: total de celdas muertas.
+Además, se imprime un **resumen** en la consola, con:
+
+- ```Máximo de infectados``` y en qué iteración ocurrió.
+- ```Vivas finales```, ```Infectadas finales```, ```Recuperadas finales``` y ```Muertas finales```.
+  
+---
+
+## 🧪 Posibles Extensiones
+
+- Ajustar dinámicamente la probabilidad de recuperación, mortalidad, contagio.
+- Agregar distintos “tipos de virus” con diferentes parámetros.
+- Mostrar gráficos más detallados (matplotlib, scripts en la carpeta analysis).
+- Implementar un modelo más cercano a la epidemiología (SIR, SEIR...).
+
+## 🙌 Agradecimientos
+- **John Horton Conway** por su legendaria contribución a la matemática y la creación de este maravilloso juego. Falleció en abril de 2020, dejando un enorme legado. ¡Gracias por tu genialidad!
+- **Ana Karina**, colaboradora clave en etapas tempranas del proyecto. ¡Tu apoyo fue fundamental!
+- A toda la comunidad de Python, Pygame, NumPy y pandas.
+
+**¡Gracias por visitar este proyecto!**
+
+Siéntete libre de abrir Issues, hacer forks y contribuir con mejoras. El mundo de la simulación y los autómatas celulares es infinito.
