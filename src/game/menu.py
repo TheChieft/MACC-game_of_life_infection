@@ -69,7 +69,7 @@ class MainMenu(BaseMenu):
             self.handle_input()
 
     def draw_background_simulation(self):
-        cell_size = 10
+        cell_size = 20
         cols = self.game.screen_w // cell_size
         rows = self.game.screen_h // cell_size
         grid = np.random.choice([0, 1], size=(rows, cols), p=[0.85, 0.15])
