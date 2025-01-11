@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import pandas as pd
+import sys
 from src.utils.constants import *
 
 class Game:
@@ -286,8 +287,9 @@ class Game:
 
         # GUARDAR DATOS (ver parte 2)
         df = pd.DataFrame(data)
-        output_file = "analysis/game_data.csv"  # Ruta sugerida (crea la carpeta si no existe)
+        output_file = "data/game_data.csv"  # <-- Usa la carpeta 'data' del proyecto
         df.to_csv(output_file, index=False)
+
         print(f"Datos del juego guardados en: {output_file}")
 
         # Resumen final (ejemplo)
@@ -305,5 +307,6 @@ class Game:
         print(f"Recuperadas finales: {final_recovered} | Muertas finales: {final_dead}")
         print("--------------------------------\n")
 
+        sys.exit()
         pygame.quit()
         # Fin del Game.run()
