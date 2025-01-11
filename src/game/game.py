@@ -152,6 +152,66 @@ class Game:
       status_surface = font.render(f"Contagio: {contagion_status}", True, (255, 255, 0))
       self.screen.blit(status_surface, (10, self.screen_height - (len(instructions) + 1) * 20))
 
+    def draw_realtime_chart(self, data_dict, pos_x, pos_y, width, height, max_points=100):
+      """
+      Dibuja un gráfico lineal en tiempo real de las últimas 'max_points' iteraciones.
+      :param data_dict: diccionario con listas: { "alive": [...], "infected": [...], etc. }
+      :param pos_x, pos_y: coordenadas donde se dibujará el gráfico
+      :param width, height: dimensiones del rectángulo del gráfico
+      :param max_points: cuántos puntos recientes mostrar
+      """
+      # 1) Obtener los datos más recientes
+      # asumiendo todas las listas tienen la misma longitud
+      total_cells = self.rows * self.cols
+      length = len(data_dict["alive"])
+      start = max(0, length - max_points)  # para no pasarnos
+      # Cortamos los datos para graficar sólo la ventana
+      alive_data = data_dict["alive"][start:]
+      infected_data = data_dict["infected"][start:]
+      recovered_data = data_dict["recovered"][start:]
+      dead_data = data_dict["dead"][start:]
+
+      # 2) Definir escalas
+      # Eje X: de 0 a max_points (o menos si no hay tantas iteraciones)
+      # Eje Y: de 0 a total_cells
+      # Convertimos coordenadas de (iteración, valor) a (px, px)
+      def to_screen_coords(i, val):
+        # i va de 0..len(alive_data)-1
+        # val va de 0..total_cells
+        # x en pantalla:
+        x_screen = pos_x + (i / (max_points - 1)) * width if (max_points > 1) else pos_x
+        # y en pantalla (invertido, 0 arriba):
+        y_screen = pos_y + height - (val / total_cells) * height
+        return (x_screen, y_screen)
+
+      # 3) Dibujar ejes (opcional)
+      pygame.draw.rect(self.screen, (50, 50, 50), (pos_x, pos_y, width, height), 1)
+
+      # 4) Dibujar cada línea
+      # Aquí usamos un color distinto para cada lista de datos
+      # definimos una función para dibujar la línea iterando de i a i+1
+      def draw_line(data_list, color):
+        for i in range(len(data_list)-1):
+          p1 = to_screen_coords(i, data_list[i])
+          p2 = to_screen_coords(i+1, data_list[i+1])
+          pygame.draw.line(self.screen, color, p1, p2, 2)
+
+      draw_line(alive_data, (0, 255, 255))     # celeste para vivos
+      draw_line(infected_data, (255, 0, 0))   # rojo para infectados
+      draw_line(recovered_data, (0, 255, 0))  # verde para recuperados
+      draw_line(dead_data, (128, 128, 128))   # gris para muertos
+
+      # 5) Dibujar la leyenda
+      font = pygame.font.Font(None, 16)
+      legend_items = [
+        ("Vivos", (0, 255, 255)),
+        ("Infectados", (255, 0, 0)),
+        ("Recuperados", (0, 255, 0)),
+        ("Muertos", (128, 128, 128)),
+      ]
+      for i, (label, color) in enumerate(legend_items):
+        text_surface = font.render(label, True, color)
+        self.screen.blit(text_surface, (pos_x + width + 10, pos_y + i * 20))
 
 
 
@@ -187,12 +247,35 @@ class Game:
             self.screen.fill(COLOR_BACKGROUND)
             self.draw_grid()
             self.draw_instructions()
+            # Justo antes de pygame.display.flip()
+            self.draw_realtime_chart(data,
+                pos_x=self.screen_width - 220, 
+                pos_y=10,
+                width=120,
+                height=80,
+                max_points=100
+            )
+
             pygame.display.flip()
 
-            clock.tick(FPS // 2)
+            clock.tick(FPS // 4)
             iteration += 1
 
         # Guardar datos al final
         df = pd.DataFrame(data)
         df.to_csv("/data/game_data.csv", index=False)
         print("Datos del juego guardados en game_data.csv")
+
+        # Hacer un pequeño resumen
+        max_infected = df["infected"].max()
+        iteration_of_max_infected = df["infected"].idxmax()
+        final_alive = df["alive"].iloc[-1]
+        final_infected = df["infected"].iloc[-1]
+        final_recovered = df["recovered"].iloc[-1]
+        final_dead = df["dead"].iloc[-1]
+
+        print("\n--- Resumen Estadístico ---")
+        print(f"Máximo de infectados: {max_infected} (en iteración {iteration_of_max_infected})")
+        print(f"Vivas finales: {final_alive} | Infectadas finales: {final_infected}")
+        print(f"Recuperadas finales: {final_recovered} | Muertas finales: {final_dead}")
+        print("--------------------------------\n")
