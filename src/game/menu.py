@@ -122,7 +122,6 @@ class SettingsMenu(BaseMenu):
             ("Tamaño del Mapa", self.adjust_map_size_display),
             (f"Activar Enfermedad ({contagion_status})", self.toggle_contagion),
             ("Reglas de Contagio", self.modify_rules),
-            ("Restablecer Predeterminadas", self.reset_defaults),
             ("Volver", self.go_back)
         ]
 
@@ -210,16 +209,77 @@ class SettingsMenu(BaseMenu):
                         running = False
 
     def modify_rules(self):
-        print("Modificar reglas de contagio: Placeholder")
-
-    def reset_defaults(self):
-        global SCREEN_WIDTH, SCREEN_HEIGHT, CONTAGION_ENABLED, CONTAGION_PROB_NEAR, CONTAGION_PROB_DISTANT
-        SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
-        CONTAGION_ENABLED = True
-        CONTAGION_PROB_NEAR = 0.3
-        CONTAGION_PROB_DISTANT = 0.1
-        pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        print("Opciones restablecidas a los valores predeterminados.")
+      contagion_menu = ContagionRulesMenu(self.game)
+      contagion_menu.display_menu()
 
     def go_back(self):
         self.running = False
+
+class ContagionRulesMenu(BaseMenu):
+    def __init__(self, game):
+        super().__init__(game)
+        # Inicializar reglas actuales
+        self.rules = {
+            "Contagio Cercano": self.game.rules.get("contagion_prob_near", 0.3),
+            "Contagio Distante": self.game.rules.get("contagion_prob_distant", 0.1),
+            "Probabilidad de Muerte": self.game.rules.get("mortality_prob", 0.05),
+            "Probabilidad de Recuperación": self.game.rules.get("recovery_prob", 0.2)
+        }
+        self.options = list(self.rules.keys())
+        self.selected_index = 0
+
+    def display_menu(self):
+        running = True
+        while running:
+            self.game.screen.fill(COLOR_BACKGROUND)
+            self.draw_background_simulation()
+
+            # Dibujar título
+            self.draw_text("Reglas de Contagio", self.title_font, (255, 255, 255), self.game.screen_w // 2, 50)
+
+            # Dibujar sliders con valores actuales
+            for index, rule in enumerate(self.options):
+                value = self.rules[rule]
+                color = (255, 255, 255) if index == self.selected_index else (180, 180, 180)
+                self.draw_text(f"{rule}: {value:.2f}", self.font, color, self.game.screen_w // 2, 150 + index * 40)
+
+            # Dibujar cursor
+            cursor_x_offset = -180
+            self.draw_cursor(self.game.screen_w // 2 + cursor_x_offset, 150 + self.selected_index * 40)
+
+            pygame.display.flip()
+
+            # Manejar entradas
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.selected_index = (self.selected_index - 1) % len(self.options)
+                    elif event.key == pygame.K_DOWN:
+                        self.selected_index = (self.selected_index + 1) % len(self.options)
+                    elif event.key == pygame.K_LEFT:
+                        # Reducir el valor de la regla seleccionada
+                        selected_rule = self.options[self.selected_index]
+                        self.rules[selected_rule] = max(0.0, self.rules[selected_rule] - 0.05)
+                    elif event.key == pygame.K_RIGHT:
+                        # Aumentar el valor de la regla seleccionada
+                        selected_rule = self.options[self.selected_index]
+                        self.rules[selected_rule] = min(1.0, self.rules[selected_rule] + 0.05)
+                    elif event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
+                        # Guardar cambios y salir
+                        self.game.rules.update(self.rules)
+                        running = False
+
+    def draw_background_simulation(self):
+        """Reutiliza el fondo del MainMenu."""
+        cell_size = 20
+        cols = self.game.screen_w // cell_size
+        rows = self.game.screen_h // cell_size
+        grid = np.random.choice([0, 1], size=(rows, cols), p=[0.85, 0.15])
+
+        for y in range(rows):
+            for x in range(cols):
+                color = (50, 50, 50) if grid[y, x] == 1 else (20, 20, 20)
+                pygame.draw.rect(self.game.screen, color, (x * cell_size, y * cell_size, cell_size, cell_size))
